@@ -54,6 +54,7 @@
  * Library can be found on https://github.com/marcel-licence/ML_SynthTools
  */
 #include <ml_epiano.h>
+#include <ml_tremolo.h>
 
 #ifdef USE_DAISY_SP /* not supported yet */
 #include "reverb_sc.h"
@@ -80,6 +81,10 @@
 
 ML_EPiano myRhodes;
 ML_EPiano *rhodes = &myRhodes;
+
+ML_Tremolo myTremolo(SAMPLE_RATE);
+ML_Tremolo *tremolo = &myTremolo;
+
 
 #ifdef USE_DAISY_SP
 ReverbSc myVerb;
@@ -423,6 +428,8 @@ void loop()
     }
 #endif
 
+    tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
+
 #ifdef MAX_DELAY
     /*
      * post process delay
@@ -523,23 +530,23 @@ void App_PitchBend(uint8_t userdata, float val)
 
 void App_ModWheel(uint8_t userdata, float val)
 {
-    Serial.printf("effect %0.3f\n", val);
-    //rhodes->SetModulationDepth(val);
-    rhodes->SetTremoloDepth(val);
+    Serial.printf("tremolo depth: %0.3f\n", val);
+    tremolo->setDepth(val);
 }
 
 void App_ModSpeed(uint8_t userdata, float val)
 {
-    Serial.printf("SetEffectSpeed %0.3f\n", val);
-    rhodes->SetEffectSpeed(0.5 + val * 15);
+    Serial.printf("tremolo speed: %0.3f\n", val);
+    tremolo->setSpeed(0.5 + val * 15);
 }
 
 #define PARAM_QUICK_DAMP_VALUE  0
 #define PARAM_QUICK_DAMP_THRES  1
 #define PARAM_MODULATION_DEPTH  2
 #define PARAM_TREMOLO_DEPTH  3
-#define PARAM_SOUND_C1  4
-#define PARAM_SOUND_C2  5
+#define PARAM_TREMOLO_SHIFT  4
+#define PARAM_SOUND_C1  5
+#define PARAM_SOUND_C2  6
 
 void App_ModParam(uint8_t param, float val)
 {
@@ -554,8 +561,11 @@ void App_ModParam(uint8_t param, float val)
     case PARAM_MODULATION_DEPTH:
         rhodes->SetModulationDepth(val);
         break;
+    case PARAM_TREMOLO_SHIFT:
+        tremolo->setPhaseShift(val);
+        break;
     case PARAM_TREMOLO_DEPTH:
-        rhodes->SetTremoloDepth(val);
+        tremolo->setDepth(val);
         break;
     case PARAM_SOUND_C1:
         rhodes->SetCurve(val);
