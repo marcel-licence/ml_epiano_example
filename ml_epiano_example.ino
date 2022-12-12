@@ -95,11 +95,18 @@ Overdrive *drive = &myDrive;
 float driveInv = 1.0f;
 #endif
 
+
+char shortName[] = "ML_Piano";
+
+
 void setup()
 {
     /*
      * this code runs once
      */
+#ifdef MIDI_USB_ENABLED
+    Midi_Usb_Setup();
+#endif
 
 #ifdef BLINK_LED_PIN
     Blink_Setup();
@@ -362,11 +369,21 @@ void loop()
     Usb_Host_Midi_loop();
 #endif
 
+#ifdef MIDI_USB_ENABLED
+    Midi_Usb_Loop();
+#endif
+
     /*
      * And finally the audio stuff
      */
 #if 1
-#if (defined ESP8266) || (defined ARDUINO_SEEED_XIAO_M0) || (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#if  (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+
+    int16_t mono[SAMPLE_BUFFER_SIZE];
+    rhodes->Process(mono, SAMPLE_BUFFER_SIZE);
+    Audio_Output(mono, mono);
+
+#elif (defined ESP8266) || (defined ARDUINO_SEEED_XIAO_M0)
 #error Configuration is not supported
 #else
 

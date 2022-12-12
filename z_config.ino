@@ -131,17 +131,21 @@ struct midiControllerMapping edirolMapping[] =
     { 0x4, 0x10, "R5", NULL, App_ModParam, PARAM_TREMOLO_DEPTH},
     { 0x5, 0x10, "R6", NULL, App_ModParam, PARAM_SOUND_C1},
     { 0x6, 0x10, "R7", NULL, App_ModParam, PARAM_SOUND_C2},
+#ifdef OVERDRIVE_ENABLED
     { 0x7, 0x10, "R8", NULL, Overdrive_SetDrive, 7},
-
+#endif
+#ifdef REVERB_ENABLED
     { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 8},
-
+#endif
     /* Central slider */
     { 0x0, 0x13, "H1", NULL, NULL, 0},
 
 
     /* MIDI defaults */
     { 0x0, 7, "Volume", NULL, NULL, 0},
+#ifdef REVERB_ENABLED
     { 0x0, 91, "Reverb", NULL, Reverb_SetLevel, 8},
+#endif
     { 0x0, 93, "Chorus", NULL, NULL, 0},
 
 };

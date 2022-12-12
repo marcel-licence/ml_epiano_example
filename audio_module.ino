@@ -66,6 +66,14 @@
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
 #include <I2S.h>
+
+#ifdef RP2040_AUDIO_PWM
+#include "RP2040_AudioPwm.h"
+
+uint32_t WavPwmDataBuff[SAMPLE_BUFFER_SIZE];
+uint32_t WavPwmDataBuff2[SAMPLE_BUFFER_SIZE];
+#endif
+
 #endif
 
 void Audio_Setup(void)
@@ -104,11 +112,19 @@ void Audio_Setup(void)
 #endif
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#ifdef RP2040_AUDIO_PWM
+    uint8_t pwmPinNumber = 0;
+    Serial.printf("Initialize pwm audio used without DAC pin %d + pin %d:\n", pwmPinNumber, pwmPinNumber + 1);
+    Serial.printf("    sample rate: %d\n", SAMPLE_RATE);
+    Serial.printf("    buffer size: %d\n", SAMPLE_BUFFER_SIZE);
+    RP2040_Audio_Pwm_Init(pwmPinNumber, SAMPLE_RATE, WavPwmDataBuff, WavPwmDataBuff2, SAMPLE_BUFFER_SIZE);
+#else
     if (!I2S.begin(SAMPLE_RATE))
     {
         Serial.println("Failed to initialize I2S!");
         while (1); // do nothing
     }
+#endif
 #endif
 
 #if (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG)
@@ -311,6 +327,33 @@ void Audio_OutputMono(const int32_t *samples)
 #endif /* ARDUINO_SEEED_XIAO_M0 */
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#ifdef RP2040_AUDIO_PWM
+    union sample
+    {
+        uint32_t buff;
+        struct
+        {
+            uint16_t left;
+            uint16_t right;
+        };
+    };
+
+    while (!RP2040_Audio_Pwm_BufferReady())
+    {
+        /* block! */
+    }
+
+    union sample *audioBuff = (union sample *) RP2040_Audio_Pwm_getFreeBuff();
+
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        uint16_t val = (samples[i] + 0x8000) >> 5; /* 21 with 32 bit input */
+        val += 361;
+
+        audioBuff[i].left = val;
+        audioBuff[i].right = val;
+    }
+#else /* RP2040_AUDIO_PWM */
     /*
      * @see https://arduino-pico.readthedocs.io/en/latest/i2s.html
      * @see https://www.waveshare.com/pico-audio.htm for connections
@@ -333,6 +376,7 @@ void Audio_OutputMono(const int32_t *samples)
     memcpy(u16int_buf, u16int, sizeof(u16int));
     I2S.write(u16int_buf, sizeof(u16int));
 #endif
+#endif /* RP2040_AUDIO_PWM */
 #endif /* ARDUINO_RASPBERRY_PI_PICO, ARDUINO_GENERIC_RP2040 */
 
 #ifdef ARDUINO_GENERIC_F407VGTX
@@ -345,6 +389,67 @@ void Audio_OutputMono(const int32_t *samples)
 #ifdef ARDUINO_DISCO_F407VG
     STM32_AudioWriteS16(samples);
 #endif
+}
+
+
+void Audio_Output(const int16_t *left, const int16_t *right)
+{
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#ifdef RP2040_AUDIO_PWM
+    union sample
+    {
+        uint32_t buff;
+        struct
+        {
+            uint16_t left;
+            uint16_t right;
+        };
+    };
+
+    while (!RP2040_Audio_Pwm_BufferReady())
+    {
+        /* block! */
+    }
+
+    union sample *audioBuff = (union sample *) RP2040_Audio_Pwm_getFreeBuff();
+
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        uint16_t val;
+        val = (left[i] + 0x8000) >> 5; /* 21 with 32 bit input */
+        val += 361;
+
+        audioBuff[i].left = val;
+
+        val = (right[i] + 0x8000) >> 5; /* 21 with 32 bit input */
+        val += 361;
+        audioBuff[i].right = val;
+    }
+#else /* RP2040_AUDIO_PWM */
+    /*
+     * @see https://arduino-pico.readthedocs.io/en/latest/i2s.html
+     * @see https://www.waveshare.com/pico-audio.htm for connections
+     */
+    int16_t u16int[2 * SAMPLE_BUFFER_SIZE];
+
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        u16int[2 * i] = samples[i];
+        u16int[(2 * i) + 1] = samples[i];
+    }
+#if 1
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE * 2; i++)
+    {
+        I2S.write(u16int[i]);
+    }
+#else
+    /* this does not work, I do not know why :-/ */
+    static int16_t u16int_buf[2 * SAMPLE_BUFFER_SIZE];
+    memcpy(u16int_buf, u16int, sizeof(u16int));
+    I2S.write(u16int_buf, sizeof(u16int));
+#endif
+#endif /* RP2040_AUDIO_PWM */
+#endif /* ARDUINO_RASPBERRY_PI_PICO, ARDUINO_GENERIC_RP2040 */
 }
 
 #if (defined ESP32) || (defined TEENSYDUINO) || (defined ARDUINO_DAISY_SEED) || (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG) || (defined ARDUINO_BLACK_F407VE)
