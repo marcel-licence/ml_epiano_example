@@ -115,7 +115,7 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 #define REVERB_ENABLED /* add simple reverb */
 
-//#define MAX_DELAY   (SAMPLE_RATE/4)
+//#define MAX_DELAY   (SAMPLE_RATE) /* requires PSRAM!!! */
 
 //#define MIDI_STREAM_PLAYER_ENABLED /* activate this to use the midi stream playback module */
 

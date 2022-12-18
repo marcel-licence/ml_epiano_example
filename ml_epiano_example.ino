@@ -188,11 +188,23 @@ void setup()
     /*
      * Prepare a buffer which can be used for the delay
      */
-    //static int16_t delBuffer1[MAX_DELAY];
-    //static int16_t delBuffer2[MAX_DELAY];
-    static int16_t *delBuffer1 = (int16_t *)malloc(sizeof(int16_t) * MAX_DELAY);
-    static int16_t *delBuffer2 = (int16_t *)malloc(sizeof(int16_t) * MAX_DELAY);
-    Delay_Init2(delBuffer1, delBuffer2, MAX_DELAY);
+    if (psramInit())
+    {
+        //static int16_t delBuffer1[MAX_DELAY];
+        //static int16_t delBuffer2[MAX_DELAY];
+        static int16_t *delBuffer1 = (int16_t *)ps_malloc(sizeof(int16_t) * MAX_DELAY);
+        static int16_t *delBuffer2 = (int16_t *)ps_malloc(sizeof(int16_t) * MAX_DELAY);
+        Delay_Init2(delBuffer1, delBuffer2, MAX_DELAY);
+
+        Delay_SetInputLevel(0, 0.75f);
+        Delay_SetOutputLevel(0, 0.75f);
+        Delay_SetFeedback(0, 0.25f);
+        Delay_SetLength(0, 0.5f);
+    }
+    else
+    {
+        Serial.printf("PSRAM required for Delay effect, software will crash!\n");
+    }
 #endif
 
 #ifdef MIDI_BLE_ENABLED
@@ -398,6 +410,12 @@ void loop()
 
     rhodes->Process(mono, SAMPLE_BUFFER_SIZE);
 
+    /* reduce gain to avoid clipping */
+    for (int n = 0; n < SAMPLE_BUFFER_SIZE; n++)
+    {
+        mono[n] *= 0.5f;
+    }
+
 #ifdef AUDIO_PASS_THROUGH
     for (int n = 0; n < SAMPLE_BUFFER_SIZE; n++)
     {
@@ -425,6 +443,13 @@ void loop()
     Reverb_Process(mono, SAMPLE_BUFFER_SIZE);
 #endif
 
+#ifdef MAX_DELAY
+    /*
+     * post process delay
+     */
+    Delay_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
+#endif
+
 #ifdef USE_DAISY_SP
     verb->Process(mono, mono, left, right, SAMPLE_BUFFER_SIZE);
 
@@ -440,19 +465,13 @@ void loop()
     /* mono to left and right channel */
     for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
     {
-        left[i] = mono[i];
-        right[i] = mono[i];
+        left[i] += mono[i];
+        right[i] += mono[i];
     }
 #endif
 
     tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
 
-#ifdef MAX_DELAY
-    /*
-     * post process delay
-     */
-    Delay_Process_Buff2(left, right, SAMPLE_BUFFER_SIZE);
-#endif
 
     /* ~21dB margin required to allow playing all notes at the same time -> overdrive would help */
 #ifdef USE_DAISY_SP
@@ -659,7 +678,31 @@ inline void Delay_SetFeedbackInt(uint8_t unused __attribute__((unused)), uint8_t
 #endif
 }
 
-#if (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG)
+#ifdef MAX_DELAY
+void App_DelayMode(uint8_t mode, float value)
+{
+    if (value > 0.0f)
+    {
+        switch (mode)
+        {
+        case 0:
+            Delay_SetShift(0, 0.25);
+            break;
+        case 1:
+            Delay_SetShift(0, 0.5);
+            break;
+        case 2:
+            Delay_SetShift(0, 2.0f / 3.0f);
+            break;
+        case 3:
+            Delay_SetShift(0, 0.75);
+            break;
+        }
+    }
+}
+#endif
+
+#if defined(I2C_SCL) && defined (I2C_SDA)
 void  ScanI2C(void)
 {
 #ifdef ARDUINO_GENERIC_F407VGTX

@@ -70,10 +70,12 @@ struct midiControllerMapping edirolMapping[] =
     { 0xa, 0x52, "rec", NULL, NULL, 0},
 
     /* upper row of buttons */
-    { 0x0, 0x50, "A1", NULL, NULL, 0},
-    { 0x1, 0x50, "A2", NULL, NULL, 1},
-    { 0x2, 0x50, "A3", NULL, NULL, 2},
-    { 0x3, 0x50, "A4", NULL, NULL, 3},
+#ifdef MAX_DELAY
+    { 0x0, 0x50, "A1", NULL, App_DelayMode, 0},
+    { 0x1, 0x50, "A2", NULL, App_DelayMode, 1},
+    { 0x2, 0x50, "A3", NULL, App_DelayMode, 2},
+    { 0x3, 0x50, "A4", NULL, App_DelayMode, 3},
+#endif
 
 #ifdef MIDI_STREAM_PLAYER_ENABLED
     { 0x4, 0x50, "A5", NULL, MidiStreamPlayerCtrl, MIDI_STREAM_PLAYER_CTRL_PAUSE},
@@ -106,12 +108,14 @@ struct midiControllerMapping edirolMapping[] =
     { 0x0, 0x0b, "VolumePedal", NULL, NULL, 0},
 
     /* slider */
-    { 0x0, 0x11, "S1", NULL, NULL, 0},
-    { 0x1, 0x11, "S2", NULL, NULL, 1},
-    { 0x2, 0x11, "S3", NULL, NULL, 2},
-    { 0x3, 0x11, "S4", NULL, NULL, 3},
+#ifdef MAX_DELAY
+    { 0x0, 0x11, "S1", NULL, Delay_SetInputLevel, 0},
+    { 0x1, 0x11, "S2", NULL, Delay_SetFeedback, 1},
+    { 0x2, 0x11, "S3", NULL, Delay_SetOutputLevel, 2},
+    { 0x3, 0x11, "S4", NULL, Delay_SetLength, 0},
 
-    { 0x4, 0x11, "S5", NULL, NULL, 4},
+    { 0x4, 0x11, "S5", NULL, Delay_SetShift, 1},
+#endif
     { 0x5, 0x11, "S6", NULL, NULL, 5},
     { 0x6, 0x11, "S7", NULL, NULL, 6},
     { 0x7, 0x11, "S8", NULL, NULL, 7},
