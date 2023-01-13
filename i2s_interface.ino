@@ -480,6 +480,8 @@ void setup_i2s()
     Serial.printf("    WCLK,LCK: %d\n", pins.ws_io_num);
     Serial.printf("    DOUT: %d\n", pins.data_out_num);
     Serial.printf("    DIN: %d\n", pins.data_in_num);
+#else
+    Serial.printf("I2S configured using internal DAC (DAC_1, DAC_2 as output)\n");
 #endif
 }
 
