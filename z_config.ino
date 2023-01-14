@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Marcel Licence
+ * Copyright (c) 2023 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,28 +69,187 @@ struct midiControllerMapping edirolMapping[] =
     { 0xe, 0x52, "start", NULL, NULL, 0},
     { 0xa, 0x52, "rec", NULL, NULL, 0},
 
-    /* upper row of buttons */
+    /* lower row of buttons */
+    { 0x0, 0x51, "B1", NULL, Midi_SetMidiMapByIndex, 0},
+    { 0x1, 0x51, "B2", NULL, Midi_SetMidiMapByIndex, 1},
+    { 0x2, 0x51, "B3", NULL, Midi_SetMidiMapByIndex, 2},
+    { 0x3, 0x51, "B4", NULL, Midi_SetMidiMapByIndex, 3},
+
+    { 0x4, 0x51, "B5", NULL, Midi_SetMidiMapByIndex, 4},
+    { 0x5, 0x51, "B6", NULL, Midi_SetMidiMapByIndex, 5},
+    { 0x6, 0x51, "B7", NULL, Midi_SetMidiMapByIndex, 6},
+    { 0x7, 0x51, "B8", NULL, Midi_SetMidiMapByIndex, 7},
+
+    { 0x1, 0x53, "B9", NULL, Midi_SetMidiMapByIndex, 8},
+
+    /* rotary */
+#ifdef REVERB_ENABLED
+    { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 8},
+#endif
+
+    /* Central slider */
+    { 0x0, 0x13, "H1", NULL, NULL, 0},
+
+    /* MIDI defaults */
+    { 0x0, 7, "Volume", NULL, App_SetVolume, 0},
+#ifdef REVERB_ENABLED
+    { 0x0, 91, "Reverb", NULL, Reverb_SetLevel, 0},
+#endif
+#ifdef ML_CHORUS_ENABLED
+    { 0x0, 93, "Chorus", NULL, Chorus_SetOutputLevel, 0},
+#endif
+    { 0x0, 74, "Cuttoff", NULL, NULL, 0},
+    { 0x0, 71, "Resonance", NULL, NULL, 0},
+};
+
+/*
+ * the other mappings can be selected during runtime
+ *
+ * using the PCR-800 as a MIDI controller following controls are static (map above):
+ * - transport buttons
+ * - general MIDI
+ * - lower row of buttons B1 - B9
+ * - rotary R5 - R9
+ * - central slider H1
+ *
+ * the following controls are flexible and changed by the active map:
+ * - upper row of buttons A1 - A9
+ * - rotary R1 - R4
+ * - slider S1 - S9
+ */
 #ifdef MAX_DELAY
+struct midiControllerMapping edirolMapping_delay[] =
+{
+    /* upper row of buttons */
     { 0x0, 0x50, "A1", NULL, App_DelayMode, 0},
     { 0x1, 0x50, "A2", NULL, App_DelayMode, 1},
     { 0x2, 0x50, "A3", NULL, App_DelayMode, 2},
     { 0x3, 0x50, "A4", NULL, App_DelayMode, 3},
+
+    /* slider */
+    { 0x0, 0x11, "S1", NULL, Delay_SetInputLevel, 0},
+    { 0x1, 0x11, "S2", NULL, Delay_SetFeedback, 0},
+    { 0x2, 0x11, "S3", NULL, Delay_SetShift, 0},
+    { 0x3, 0x11, "S4", NULL, Delay_SetLength, 0},
+
+    { 0x4, 0x11, "S5", NULL, NULL, 4},
+    { 0x5, 0x11, "S6", NULL, NULL, 5},
+    { 0x6, 0x11, "S7", NULL, NULL, 6},
+    { 0x7, 0x11, "S8", NULL, NULL, 7},
+
+    { 0x1, 0x12, "S9", NULL, Delay_SetOutputLevel, 8},
+};
 #endif
 
+#ifdef ML_CHORUS_ENABLED
+struct midiControllerMapping edirolMapping_chorus[] =
+{
+    /* slider */
+    { 0x0, 0x11, "S1", NULL, Chorus_SetInputLevel, 0},
+    { 0x1, 0x11, "S2", NULL, Chorus_SetDelay, 1},
+    { 0x2, 0x11, "S3", NULL, Chorus_SetDepth, 2},
+    { 0x3, 0x11, "S4", NULL, Chorus_SetSpeed, 3},
+
+    { 0x4, 0x11, "S5", NULL, Chorus_SetThrough, 4},
+    { 0x5, 0x11, "S6", NULL, Chorus_SetPhaseShift, 5},
+    { 0x6, 0x11, "S7", NULL, NULL, 6},
+    { 0x7, 0x11, "S8", NULL, NULL, 7},
+
+    { 0x1, 0x12, "S9", NULL, Chorus_SetOutputLevel, 8},
+};
+#endif
+
+struct midiControllerMapping edirolMapping_tremolo[] =
+{
+    /* slider */
+    { 0x0, 0x11, "S1", NULL, App_ModParam, PARAM_TREMOLO_DEPTH},
+    { 0x1, 0x11, "S2", NULL, App_ModParam, PARAM_TREMOLO_SHIFT},
+    { 0x2, 0x11, "S3", NULL, NULL, 2},
+    { 0x3, 0x11, "S4", NULL, NULL, 3},
+
+    { 0x4, 0x11, "S5", NULL, NULL, 4},
+    { 0x5, 0x11, "S6", NULL, NULL, 5},
+    { 0x6, 0x11, "S7", NULL, NULL, 6},
+    { 0x7, 0x11, "S8", NULL, NULL, 7},
+
+    { 0x1, 0x12, "S9", NULL, NULL, 8},
+};
+
+struct midiControllerMapping edirolMapping_piano[] =
+{
+    /* slider */
+    { 0x0, 0x11, "S1", NULL, App_ModParam, PARAM_QUICK_DAMP_VALUE},
+    { 0x1, 0x11, "S2", NULL, App_ModParam, PARAM_QUICK_DAMP_THRES},
+    { 0x2, 0x11, "S3", NULL, App_ModParam, PARAM_MODULATION_DEPTH},
+    { 0x3, 0x11, "S4", NULL, NULL, 3},
+
+    { 0x4, 0x11, "S5", NULL, App_ModParam, PARAM_SOUND_C1},
+    { 0x5, 0x11, "S6", NULL, App_ModParam, PARAM_SOUND_C2},
+    { 0x6, 0x11, "S7", NULL, NULL, 6},
+    { 0x7, 0x11, "S8", NULL, NULL, 7},
+
+    { 0x1, 0x12, "S9", NULL, NULL, 8},
+
+    /* upper row of buttons */
+    { 0x0, 0x50, "A1", NULL, App_ModSwitch, 0},
+    { 0x1, 0x50, "A2", NULL, App_ModSwitch, 1},
+    { 0x2, 0x50, "A3", NULL, App_ModSwitch, 2},
+    { 0x3, 0x50, "A4", NULL, App_ModSwitch, 3},
+
+    { 0x4, 0x50, "A5", NULL, App_ModSwitch, PIANO_SWITCH_SUB_BASE},
+    { 0x5, 0x50, "A6", NULL, App_ModSwitch, 5},
+    { 0x6, 0x50, "A7", NULL, App_ModSwitch, 6},
+    { 0x7, 0x50, "A8", NULL, App_ModSwitch, 7},
+
+    { 0x0, 0x53, "A9", NULL, App_ModSwitch, 8},
+};
+
 #ifdef MIDI_STREAM_PLAYER_ENABLED
+struct midiControllerMapping edirolMapping_midi_stream_player[] =
+{
+    /* rotary */
+    { 0x0, 0x10, "R1", NULL, MidiStreamPlayerTempo, 0},
+
+    /* slider */
+    { 0x0, 0x11, "S1", NULL, NULL, 0},
+    { 0x1, 0x11, "S2", NULL, NULL, 1},
+    { 0x2, 0x11, "S3", NULL, NULL, 2},
+    { 0x3, 0x11, "S4", NULL, NULL, 3},
+
+    { 0x4, 0x11, "S5", NULL, NULL, 4},
+    { 0x5, 0x11, "S6", NULL, NULL, 5},
+    { 0x6, 0x11, "S7", NULL, NULL, 6},
+    { 0x7, 0x11, "S8", NULL, NULL, 7},
+
+    { 0x1, 0x12, "S9", NULL, NULL, 8},
+
+    /* upper row of buttons */
+    { 0x0, 0x50, "A1", NULL, NULL, 0},
+    { 0x1, 0x50, "A2", NULL, NULL, 1},
+    { 0x2, 0x50, "A3", NULL, NULL, 2},
+    { 0x3, 0x50, "A4", NULL, NULL, 3},
+
     { 0x4, 0x50, "A5", NULL, MidiStreamPlayerCtrl, MIDI_STREAM_PLAYER_CTRL_PAUSE},
     { 0x5, 0x50, "A6", NULL, MidiStreamPlayerCtrl, MIDI_STREAM_PLAYER_CTRL_STOP},
     { 0x6, 0x50, "A7", NULL, MidiStreamPlayerCtrl, MIDI_STREAM_PLAYER_CTRL_PLAY},
     { 0x7, 0x50, "A8", NULL, MidiStreamPlayerCtrl, MIDI_STREAM_PLAYER_CTRL_SKIP},
-#else
+
+    { 0x0, 0x53, "A9", NULL, NULL, 8},
+};
+#endif
+
+struct midiControllerMapping edirolMapping_rest[] =
+{
+
+
     { 0x4, 0x50, "A5", NULL, NULL, 0},
     { 0x5, 0x50, "A6", NULL, NULL, 1},
     { 0x6, 0x50, "A7", NULL, NULL, 2},
     { 0x7, 0x50, "A8", NULL, NULL, 0},
-#endif
 
     { 0x0, 0x53, "A9", NULL, NULL, 0},
 
+#if 0
     /* lower row of buttons */
     { 0x0, 0x51, "B1", NULL, App_ModSwitch, 0},
     { 0x1, 0x51, "B2", NULL, App_ModSwitch, 1},
@@ -103,24 +262,10 @@ struct midiControllerMapping edirolMapping[] =
     { 0x7, 0x51, "B8", NULL, App_ModSwitch, 7},
 
     { 0x1, 0x53, "B9", NULL, App_ModSwitch, 0},
+#endif
 
     /* pedal */
     { 0x0, 0x0b, "VolumePedal", NULL, NULL, 0},
-
-    /* slider */
-#ifdef MAX_DELAY
-    { 0x0, 0x11, "S1", NULL, Delay_SetInputLevel, 0},
-    { 0x1, 0x11, "S2", NULL, Delay_SetFeedback, 1},
-    { 0x2, 0x11, "S3", NULL, Delay_SetOutputLevel, 2},
-    { 0x3, 0x11, "S4", NULL, Delay_SetLength, 0},
-
-    { 0x4, 0x11, "S5", NULL, Delay_SetShift, 1},
-#endif
-    { 0x5, 0x11, "S6", NULL, NULL, 5},
-    { 0x6, 0x11, "S7", NULL, NULL, 6},
-    { 0x7, 0x11, "S8", NULL, NULL, 7},
-
-    { 0x1, 0x12, "S9", NULL, NULL, 8},
 
     /* rotary */
 #ifdef MIDI_STREAM_PLAYER_ENABLED
@@ -133,7 +278,7 @@ struct midiControllerMapping edirolMapping[] =
     { 0x3, 0x10, "R4", NULL, App_ModParam, PARAM_MODULATION_DEPTH},
 
     { 0x4, 0x10, "R5", NULL, App_ModParam, PARAM_TREMOLO_DEPTH},
-    { 0x5, 0x10, "R6", NULL, App_ModParam, PARAM_SOUND_C1},
+    { 0x5, 0x10, "R6", NULL, App_ModParam, PARAM_TREMOLO_SHIFT},
     { 0x6, 0x10, "R7", NULL, App_ModParam, PARAM_SOUND_C2},
 #ifdef OVERDRIVE_ENABLED
     { 0x7, 0x10, "R8", NULL, Overdrive_SetDrive, 7},
@@ -141,18 +286,32 @@ struct midiControllerMapping edirolMapping[] =
 #ifdef REVERB_ENABLED
     { 0x0, 0x12, "R9", NULL, Reverb_SetLevel, 8},
 #endif
-    /* Central slider */
-    { 0x0, 0x13, "H1", NULL, NULL, 0},
-
-
-    /* MIDI defaults */
-    { 0x0, 7, "Volume", NULL, NULL, 0},
-#ifdef REVERB_ENABLED
-    { 0x0, 91, "Reverb", NULL, Reverb_SetLevel, 8},
-#endif
-    { 0x0, 93, "Chorus", NULL, NULL, 0},
-
 };
+
+#define ARRAY_LENGTH(array) (sizeof(array)/sizeof(array[0]))
+
+/*
+ * this lookup table shall contain all selectable MIDI maps
+ */
+struct midiMapLookUpEntry midiMapLookUp[] =
+{
+    {"Piano", edirolMapping_piano, ARRAY_LENGTH(edirolMapping_piano)},
+#ifdef MAX_DELAY
+    {"Delay", edirolMapping_delay, ARRAY_LENGTH(edirolMapping_delay)},
+#endif
+#ifdef ML_CHORUS_ENABLED
+    {"Chorus", edirolMapping_chorus, ARRAY_LENGTH(edirolMapping_chorus) },
+#endif
+    {"Tremolo", edirolMapping_tremolo, ARRAY_LENGTH(edirolMapping_tremolo)},
+#ifdef MIDI_STREAM_PLAYER_ENABLED
+    {"MIDI Player", edirolMapping_midi_stream_player, ARRAY_LENGTH(edirolMapping_midi_stream_player)},
+#endif
+    {"Rest", edirolMapping_rest, ARRAY_LENGTH(edirolMapping_rest) },
+};
+
+#define MIDI_CONTROL_MAP_INIT_ID    0
+
+int midiMapLookUpCnt = ARRAY_LENGTH(midiMapLookUp);
 
 struct midiMapping_s midiMapping =
 {
@@ -164,7 +323,9 @@ struct midiMapping_s midiMapping =
     NULL,
     NULL,
     edirolMapping,
-    sizeof(edirolMapping) / sizeof(edirolMapping[0]),
+    ARRAY_LENGTH(edirolMapping),
+    midiMapLookUp[MIDI_CONTROL_MAP_INIT_ID].controlMap,
+    midiMapLookUp[MIDI_CONTROL_MAP_INIT_ID].controlMapSize,
 };
 
 #ifdef MIDI_VIA_USB_ENABLED

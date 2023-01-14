@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Marcel Licence
+ * Copyright (c) 2023 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +71,8 @@
 #include <Audio.h> /* required to access teensy audio defines */
 #endif
 
+/* use flexible MIDI mapping */
+#define MIDI_MAP_FLEX_ENABLED
 
 /*
  * Configuration for

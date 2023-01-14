@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Marcel Licence
+ * Copyright (c) 2023 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -535,10 +535,11 @@ void Midi_SetMidiMap(struct midiControllerMapping *controlMapping, int mapSize)
 
 void Midi_SetMidiMapByIndex(uint8_t index, float value)
 {
-    if (index < midiMapLookUpCnt)
+    if ((index < midiMapLookUpCnt) && (value > 0))
     {
         Midi_SetMidiMap(midiMapLookUp[index].controlMap, midiMapLookUp[index].controlMapSize);
-        Serial.printf("Midi map %s selected\n", midiMapLookUp[index].desc);
+
+        Status_ValueChangedStr("Midi map", midiMapLookUp[index].desc);
     }
 }
 #endif

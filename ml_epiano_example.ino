@@ -70,6 +70,9 @@
 #ifdef MAX_DELAY
 #include <ml_delay.h>
 #endif
+#ifdef ML_CHORUS_ENABLED
+#include <ml_chorus.h>
+#endif
 #ifdef OLED_OSC_DISP_ENABLED
 #include <ml_scope.h>
 #endif
@@ -98,6 +101,8 @@ float driveInv = 1.0f;
 
 char shortName[] = "ML_Piano";
 
+
+float mainVolume = 0.5f;
 
 void setup()
 {
@@ -196,15 +201,32 @@ void setup()
         static int16_t *delBuffer2 = (int16_t *)ps_malloc(sizeof(int16_t) * MAX_DELAY);
         Delay_Init2(delBuffer1, delBuffer2, MAX_DELAY);
 
+#if 0
         Delay_SetInputLevel(0, 0.75f);
         Delay_SetOutputLevel(0, 0.75f);
         Delay_SetFeedback(0, 0.25f);
         Delay_SetLength(0, 0.5f);
+#else
+        Delay_SetInputLevel(0, 0.75f);
+        Delay_SetOutputLevel(0, 0.0f);
+        Delay_SetFeedback(0, 0.25f);
+        Delay_SetLength(0, 0.5f);
+#endif
     }
     else
     {
         Serial.printf("PSRAM required for Delay effect, software will crash!\n");
     }
+#endif
+
+#ifdef ML_CHORUS_ENABLED
+    uint32_t chorus_len = 2048 * 2; // deep chorus
+    Chorus_Init((int16_t *)malloc(sizeof(int16_t)*chorus_len), chorus_len / 2);
+
+    Chorus_SetInputLevel(0, 0.75f);
+    Chorus_SetOutputLevel(0, 0.75f);
+    Chorus_SetDepth(0, 0.5f);
+    Chorus_SetSpeed(0, 0.1f);
 #endif
 
 #ifdef MIDI_BLE_ENABLED
@@ -303,6 +325,7 @@ void Core0TaskSetup()
 #ifdef OLED_OSC_DISP_ENABLED
     ScopeOled_Setup();
 #endif
+    Status_Setup();
 #ifdef MIDI_VIA_USB_ENABLED
     UsbMidi_Setup();
 #endif
@@ -313,6 +336,7 @@ void Core0TaskLoop()
     /*
      * put your loop stuff for core0 here
      */
+    Status_Process();
 #ifdef MIDI_VIA_USB_ENABLED
     UsbMidi_Loop();
 #endif
@@ -413,13 +437,13 @@ void loop()
     /* reduce gain to avoid clipping */
     for (int n = 0; n < SAMPLE_BUFFER_SIZE; n++)
     {
-        mono[n] *= 0.5f;
+        mono[n] *= mainVolume;
     }
 
 #ifdef AUDIO_PASS_THROUGH
     for (int n = 0; n < SAMPLE_BUFFER_SIZE; n++)
     {
-        mono[n] += (left[n] + right[n]) * 0.5f * 32.0f;
+        mono[n] += (left[n] + right[n]) * 0.5f * 2.0f;
     }
 #endif
 
@@ -427,13 +451,7 @@ void loop()
     Overdrive_Process_fl(mono, SAMPLE_BUFFER_SIZE);
 #endif
 
-#ifdef INPUT_TO_MIX
-    Audio_Input(left, right);
-    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
-    {
-        mono[i] += (left[i] * 0.5f + right[i] * 0.5f) * 32.0f;
-    }
-#endif
+
 
 #ifdef USE_DAISY_SP
     drive->Process(mono, mono, SAMPLE_BUFFER_SIZE);
@@ -441,13 +459,6 @@ void loop()
 
 #ifdef REVERB_ENABLED
     Reverb_Process(mono, SAMPLE_BUFFER_SIZE);
-#endif
-
-#ifdef MAX_DELAY
-    /*
-     * post process delay
-     */
-    Delay_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
 #endif
 
 #ifdef USE_DAISY_SP
@@ -470,8 +481,25 @@ void loop()
     }
 #endif
 
+#ifdef ML_CHORUS_ENABLED
+    Chorus_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
+#else
+    /* mono to left and right channel */
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        left[i] += mono[i];
+        right[i] += mono[i];
+    }
+#endif
+
     tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
 
+#ifdef MAX_DELAY
+    /*
+     * post process delay
+     */
+    Delay_Process_Buff(left, right, left, right, SAMPLE_BUFFER_SIZE);
+#endif
 
     /* ~21dB margin required to allow playing all notes at the same time -> overdrive would help */
 #ifdef USE_DAISY_SP
@@ -479,6 +507,18 @@ void loop()
     {
         left[i] *= driveInv;
         right[i] *= driveInv;
+    }
+#endif
+
+#ifdef INPUT_TO_MIX
+    {
+        float in_l[SAMPLE_BUFFER_SIZE], in_r[SAMPLE_BUFFER_SIZE];
+        Audio_Input(in_l, in_r);
+        for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+        {
+            left[i] += in_l[i];
+            right[i] += in_r[i];
+        }
     }
 #endif
 
@@ -516,6 +556,8 @@ void loop()
 #endif
     Audio_OutputMono(mono);
 #endif
+
+    Status_Process_Sample(SAMPLE_BUFFER_SIZE);
 }
 
 /*
@@ -583,6 +625,11 @@ void App_ModSpeed(uint8_t userdata, float val)
 #define PARAM_TREMOLO_SHIFT  4
 #define PARAM_SOUND_C1  5
 #define PARAM_SOUND_C2  6
+
+void App_SetVolume(uint8_t unused, float val)
+{
+    mainVolume = val;
+}
 
 void App_ModParam(uint8_t param, float val)
 {
