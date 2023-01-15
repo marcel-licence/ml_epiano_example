@@ -223,10 +223,7 @@ void setup()
     uint32_t chorus_len = 2048 * 2; // deep chorus
     Chorus_Init((int16_t *)malloc(sizeof(int16_t)*chorus_len), chorus_len / 2);
 
-    Chorus_SetInputLevel(0, 0.75f);
-    Chorus_SetOutputLevel(0, 0.75f);
-    Chorus_SetDepth(0, 0.5f);
-    Chorus_SetSpeed(0, 0.1f);
+    Chorus_SetupDefaultPreset(0, 1.0f);
 #endif
 
 #ifdef MIDI_BLE_ENABLED

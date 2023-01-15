@@ -119,6 +119,8 @@ SoftwareSerial Serial2(RXD2, TXD2);
 
 //#define MAX_DELAY   (SAMPLE_RATE) /* requires PSRAM!!! */
 
+#define ML_CHORUS_ENABLED
+
 //#define MIDI_STREAM_PLAYER_ENABLED /* activate this to use the midi stream playback module */
 
 /* use this to display a scope on the oled display */

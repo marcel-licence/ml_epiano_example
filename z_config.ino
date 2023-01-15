@@ -240,8 +240,6 @@ struct midiControllerMapping edirolMapping_midi_stream_player[] =
 
 struct midiControllerMapping edirolMapping_rest[] =
 {
-
-
     { 0x4, 0x50, "A5", NULL, NULL, 0},
     { 0x5, 0x50, "A6", NULL, NULL, 1},
     { 0x6, 0x50, "A7", NULL, NULL, 2},
@@ -300,13 +298,13 @@ struct midiMapLookUpEntry midiMapLookUp[] =
     {"Delay", edirolMapping_delay, ARRAY_LENGTH(edirolMapping_delay)},
 #endif
 #ifdef ML_CHORUS_ENABLED
-    {"Chorus", edirolMapping_chorus, ARRAY_LENGTH(edirolMapping_chorus) },
+    {"Chorus", edirolMapping_chorus, ARRAY_LENGTH(edirolMapping_chorus)},
 #endif
     {"Tremolo", edirolMapping_tremolo, ARRAY_LENGTH(edirolMapping_tremolo)},
 #ifdef MIDI_STREAM_PLAYER_ENABLED
     {"MIDI Player", edirolMapping_midi_stream_player, ARRAY_LENGTH(edirolMapping_midi_stream_player)},
 #endif
-    {"Rest", edirolMapping_rest, ARRAY_LENGTH(edirolMapping_rest) },
+    {"Rest", edirolMapping_rest, ARRAY_LENGTH(edirolMapping_rest)},
 };
 
 #define MIDI_CONTROL_MAP_INIT_ID    0
