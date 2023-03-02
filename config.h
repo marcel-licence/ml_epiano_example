@@ -250,14 +250,18 @@ SoftwareSerial Serial2(RXD2, TXD2);
  */
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
 
+#define ML_CHORUS_ENABLED
+#define MAX_DELAY   (SAMPLE_RATE)
+
 #ifdef ARDUINO_RASPBERRY_PI_PICO
 #define BLINK_LED_PIN LED_BUILTIN
 #else
 #define BLINK_LED_PIN 19
 #endif
 #define SAMPLE_BUFFER_SIZE  48
-#define SAMPLE_RATE  48000
+#define SAMPLE_RATE  44100
 
+#define MIDI_RX2_PIN    5
 #define MIDI_PORT2_ACTIVE
 
 #define MIDI_USB_ENABLED /* connect RP2040 as a USB device */

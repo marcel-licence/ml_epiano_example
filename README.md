@@ -2,11 +2,13 @@
 <h3 align="center">Arduino full polyphonic ESP32 synthesizer (experimental e-piano)</h3>  
 <p align="center"> 
   <img src="img/splash.jpg" alt="project picture" width="480px" height="270px"><br>
-  <a href="https://youtu.be/m12w1Xtm5Ts">link to the video</a>
+  <a href="https://youtu.be/m12w1Xtm5Ts">link to the video ESP32</a>
+  <a href="https://youtu.be/IYpu-xY-JNk">link to the video RP2040</a>
 </p>
 
 This project is an example supporting different platforms (soon):
 - ESP32
+- RP2040 (tiny2040, raspberry pi pico): https://youtu.be/IYpu-xY-JNk
 
 The required library can be found here: https://github.com/marcel-licence/ML_SynthTools
 

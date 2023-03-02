@@ -391,6 +391,10 @@ void Audio_OutputMono(const int32_t *samples)
 #endif
 }
 
+void Audio_Output(const Q1_14 *left, const Q1_14 *right)
+{
+    Audio_Output((const int16_t *)left, (const int16_t *)right);
+}
 
 void Audio_Output(const int16_t *left, const int16_t *right)
 {

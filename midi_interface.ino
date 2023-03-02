@@ -390,9 +390,16 @@ void Midi_Setup()
     Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN, MIDI_TX2_PIN);
 #else
     Serial.printf("Setup Serial2 with %d baud with rx: %d only\n", MIDI_SERIAL2_BAUDRATE, MIDI_RX2_PIN);
+#if (!defined ARDUINO_RASPBERRY_PI_PICO) && (!defined ARDUINO_GENERIC_RP2040)
     Serial2.begin(MIDI_SERIAL2_BAUDRATE, SERIAL_8N1, MIDI_RX2_PIN);
+#else
+    Serial2.setRX(MIDI_RX2_PIN);
+    Serial2.begin(MIDI_SERIAL2_BAUDRATE);
 #endif
+#endif
+#if (!defined ARDUINO_RASPBERRY_PI_PICO) && (!defined ARDUINO_GENERIC_RP2040)
     pinMode(MIDI_RX2_PIN, INPUT_PULLUP); /* can be connected to open collector output */
+#endif
 #else
     Serial.printf("Setup Serial2 with %d baud with rx: RX2 pin\n", MIDI_SERIAL2_BAUDRATE);
     Serial2.begin(MIDI_SERIAL2_BAUDRATE);

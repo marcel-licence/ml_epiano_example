@@ -81,13 +81,21 @@
 #include <Wire.h> /* todo remove, just for scanning */
 #endif
 
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#include <ml_types.h>
+#endif
+
 
 ML_EPiano myRhodes;
 ML_EPiano *rhodes = &myRhodes;
 
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+ML_TremoloQ myTremolo;
+ML_TremoloQ *tremolo = &myTremolo;
+#else
 ML_Tremolo myTremolo(SAMPLE_RATE);
 ML_Tremolo *tremolo = &myTremolo;
-
+#endif
 
 #ifdef USE_DAISY_SP
 ReverbSc myVerb;
@@ -178,6 +186,25 @@ void setup()
     verb->SetLpFreq(18000.0f);
 #endif
 
+
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+    const uint32_t chorus_len = 2048; // deep chorus
+    static int16_t chorus_buffer[chorus_len];
+    Chorus_Init(chorus_buffer, chorus_len);
+
+    Chorus_SetInputLevel(0, 1.0f);
+    Chorus_SetOutputLevel(0, 1.0f);
+    Chorus_SetThrough(0, 1.0f);
+    Chorus_SetDepth(0, 0.5f);
+    Chorus_SetSpeed(0, 0.0f);
+    Chorus_SetPhaseShift(0, 0.5f);
+    Serial.printf(" done!\n");
+
+    tremolo->init(SAMPLE_RATE);
+
+    rhodes->Init(SAMPLE_RATE);
+#endif
+
 #ifdef REVERB_ENABLED
     /*
      * Initialize reverb
@@ -190,6 +217,8 @@ void setup()
 #endif
 
 #ifdef MAX_DELAY
+
+#ifdef ESP32
     /*
      * Prepare a buffer which can be used for the delay
      */
@@ -217,13 +246,24 @@ void setup()
     {
         Serial.printf("PSRAM required for Delay effect, software will crash!\n");
     }
+#else
+    static int16_t delBuffer1[MAX_DELAY];
+    Delay_Init(delBuffer1,  MAX_DELAY);
+    Delay_SetInputLevel(0, 0.75f);
+    Delay_SetOutputLevel(0, 0.0f);
+    Delay_SetFeedback(0, 0.25f);
+    Delay_SetLength(0, 0.5f);
+#endif
+
 #endif
 
 #ifdef ML_CHORUS_ENABLED
+#ifdef ESP32
     uint32_t chorus_len = 2048 * 2; // deep chorus
     Chorus_Init((int16_t *)malloc(sizeof(int16_t)*chorus_len), chorus_len / 2);
 
     Chorus_SetupDefaultPreset(0, 1.0f);
+#endif
 #endif
 
 #ifdef MIDI_BLE_ENABLED
@@ -383,6 +423,8 @@ void loop()
         loop_1Hz();
     }
 
+    Status_Process();
+
     /*
      * MIDI processing
      */
@@ -412,9 +454,14 @@ void loop()
 #if 1
 #if  (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
 
-    int16_t mono[SAMPLE_BUFFER_SIZE];
+    Q1_14 mono[SAMPLE_BUFFER_SIZE];
+    Q1_14 left[SAMPLE_BUFFER_SIZE];
+    Q1_14 right[SAMPLE_BUFFER_SIZE];
     rhodes->Process(mono, SAMPLE_BUFFER_SIZE);
-    Audio_Output(mono, mono);
+    Delay_Process_Buff((int16_t *)mono, SAMPLE_BUFFER_SIZE);
+    Chorus_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
+    tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
+    Audio_Output(left, right);
 
 #elif (defined ESP8266) || (defined ARDUINO_SEEED_XIAO_M0)
 #error Configuration is not supported
@@ -593,25 +640,23 @@ void App_NoteOff(uint8_t ch, uint8_t note)
     }
 }
 
-void App_Sustain(uint8_t userdata, float val)
+void App_Sustain(uint8_t unused __attribute__((unused)), float val)
 {
     rhodes->Sustain(val);
 }
 
-void App_PitchBend(uint8_t userdata, float val)
+void App_PitchBend(uint8_t unused __attribute__((unused)), float val)
 {
     rhodes->PitchBend(val);
 }
 
-void App_ModWheel(uint8_t userdata, float val)
+void App_ModWheel(uint8_t unused __attribute__((unused)), float val)
 {
-    Serial.printf("tremolo depth: %0.3f\n", val);
     tremolo->setDepth(val);
 }
 
-void App_ModSpeed(uint8_t userdata, float val)
+void App_ModSpeed(uint8_t unused __attribute__((unused)), float val)
 {
-    Serial.printf("tremolo speed: %0.3f\n", val);
     tremolo->setSpeed(0.5 + val * 15);
 }
 
@@ -620,8 +665,9 @@ void App_ModSpeed(uint8_t userdata, float val)
 #define PARAM_MODULATION_DEPTH  2
 #define PARAM_TREMOLO_DEPTH  3
 #define PARAM_TREMOLO_SHIFT  4
-#define PARAM_SOUND_C1  5
-#define PARAM_SOUND_C2  6
+#define PARAM_TREMOLO_SPEED  5
+#define PARAM_SOUND_C1  6
+#define PARAM_SOUND_C2  7
 
 void App_SetVolume(uint8_t unused, float val)
 {
@@ -646,6 +692,13 @@ void App_ModParam(uint8_t param, float val)
         break;
     case PARAM_TREMOLO_DEPTH:
         tremolo->setDepth(val);
+        break;
+    case PARAM_TREMOLO_SPEED:
+        {
+            float speed = 6.5f * 0.5f;
+            speed += val * 6.5f * 3.0f;
+            tremolo->setSpeed(speed);
+        }
         break;
     case PARAM_SOUND_C1:
         rhodes->SetCurve(val);
@@ -746,7 +799,7 @@ void App_DelayMode(uint8_t mode, float value)
 }
 #endif
 
-#if defined(I2C_SCL) && defined (I2C_SDA)
+#if defined(I2C_SCL) && defined(I2C_SDA)
 void  ScanI2C(void)
 {
 #ifdef ARDUINO_GENERIC_F407VGTX
@@ -803,5 +856,5 @@ void  ScanI2C(void)
         Serial.println("done\n");
     }
 }
-#endif /* (defined ARDUINO_GENERIC_F407VGTX) || (defined ARDUINO_DISCO_F407VG) */
+#endif /* defined(I2C_SCL) && defined(I2C_SDA) */
 

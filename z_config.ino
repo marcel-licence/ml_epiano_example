@@ -164,7 +164,7 @@ struct midiControllerMapping edirolMapping_tremolo[] =
     /* slider */
     { 0x0, 0x11, "S1", NULL, App_ModParam, PARAM_TREMOLO_DEPTH},
     { 0x1, 0x11, "S2", NULL, App_ModParam, PARAM_TREMOLO_SHIFT},
-    { 0x2, 0x11, "S3", NULL, NULL, 2},
+    { 0x2, 0x11, "S3", NULL, App_ModParam, PARAM_TREMOLO_SPEED},
     { 0x3, 0x11, "S4", NULL, NULL, 3},
 
     { 0x4, 0x11, "S5", NULL, NULL, 4},
