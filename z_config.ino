@@ -318,6 +318,7 @@ struct midiMapping_s midiMapping =
     App_NoteOff,
     App_PitchBend,
     App_ModWheel,
+    NULL, /* assign program change callback here! */
     NULL,
     NULL,
     edirolMapping,

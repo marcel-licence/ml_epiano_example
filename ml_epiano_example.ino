@@ -86,6 +86,17 @@
 #endif
 
 
+#define ML_SYNTH_INLINE_DECLARATION
+#include <i2s_interface.h>
+#include <i2s_module.h>
+#include <audio_module.h>
+#include <midi_interface.h>
+#include <midi_stream_player.h>
+#include <midi_via_ble.h>
+#include <midi_via_usb.h>
+#undef ML_SYNTH_INLINE_DECLARATION
+
+
 ML_EPiano myRhodes;
 ML_EPiano *rhodes = &myRhodes;
 
@@ -219,6 +230,8 @@ void setup()
 #ifdef MAX_DELAY
 
 #ifdef ESP32
+    rhodes->Init(SAMPLE_RATE);
+
     /*
      * Prepare a buffer which can be used for the delay
      */
@@ -304,18 +317,7 @@ void setup()
 #endif
 
 #ifdef NOTE_ON_AFTER_SETUP
-#ifdef USE_ML_SYNTH_PRO
-    OrganPro_NoteOn(0, 60, 127);
-    OrganPro_SetLeslCtrl(127);
-#ifndef SOC_CPU_HAS_FPU
-    Serial.printf("Synth might not work because CPU does not have a FPU (floating point unit)");
-#endif
-#else
-    Organ_NoteOn(0, 60, 127);
-    Organ_SetLeslCtrl(127);
-    Organ_PercussionSet(CTRL_ROTARY_ACTIVE);
-    Organ_PercussionSet(CTRL_ROTARY_ACTIVE);
-#endif
+    App_NoteOn(0, 60, 127);
 #endif
 
 #ifdef USE_DAISY_SP
@@ -800,6 +802,9 @@ void App_DelayMode(uint8_t mode, float value)
 #endif
 
 #if defined(I2C_SCL) && defined(I2C_SDA)
+
+#include <Wire.h>
+
 void  ScanI2C(void)
 {
 #ifdef ARDUINO_GENERIC_F407VGTX
