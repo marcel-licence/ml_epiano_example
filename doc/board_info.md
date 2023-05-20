@@ -7,7 +7,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.0.4<br />
 <b>Board:</b> WEMOS D1 MINI ESP32<br />
 <br />
-<b>Program storage space:</b> 754425 bytes<br />
+<b>Program storage space:</b> 754569 bytes<br />
 <b>Dynamic memory:</b> 72364 bytes<br />
 <br />
 <b>Flash Frequency:</b> 80MHz<br />
@@ -79,7 +79,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.0.5<br />
 <b>Board:</b> WEMOS D1 MINI ESP32<br />
 <br />
-<b>Program storage space:</b> 755485 bytes<br />
+<b>Program storage space:</b> 755613 bytes<br />
 <b>Dynamic memory:</b> 71876 bytes<br />
 <br />
 <b>Flash Frequency:</b> 80MHz<br />
@@ -228,7 +228,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 2.0.7<br />
 <b>Board:</b> ESP32 Dev Module<br />
 <br />
-<b>Program storage space:</b> 781605 bytes<br />
+<b>Program storage space:</b> 781733 bytes<br />
 <b>Dynamic memory:</b> 77072 bytes<br />
 <br />
 <b>JTAG Adapter:</b> Disabled<br />
@@ -307,7 +307,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 1.0.6<br />
 <b>Board:</b> ESP32 Dev Module<br />
 <br />
-<b>Program storage space:</b> 714570 bytes<br />
+<b>Program storage space:</b> 714698 bytes<br />
 <b>Dynamic memory:</b> 72852 bytes<br />
 <br />
 <b>PSRAM:</b> Disabled<br />
@@ -382,7 +382,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 1.13.1<br />
 <b>Board:</b> Raspberry Pi Pico<br />
 <br />
-<b>Program storage space:</b> 84792 bytes<br />
+<b>Program storage space:</b> 85120 bytes<br />
 <b>Dynamic memory:</b> 179000 bytes<br />
 <br />
 <b>Flash Size:</b> 2MB (no FS)<br />
@@ -435,7 +435,7 @@ Below you will find a list of build which can be configured and should compile w
 <b>Version:</b> 1.13.1<br />
 <b>Board:</b> Generic RP2040<br />
 <br />
-<b>Program storage space:</b> 84792 bytes<br />
+<b>Program storage space:</b> 85112 bytes<br />
 <b>Dynamic memory:</b> 179000 bytes<br />
 <br />
 <b>Flash Size:</b> 2MB (no FS)<br />

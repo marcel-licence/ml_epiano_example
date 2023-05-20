@@ -1,0 +1,8 @@
+fqbn;version;config
+espressif:esp32:d1_mini32;2.0.4;PSRAM=disabled\nPARTITION_SCHEME=no_ota
+espressif:esp32:d1_mini32;2.0.5;PSRAM=disabled\nPARTITION_SCHEME=no_ota
+espressif:esp32:esp32;2.0.5;PSRAM=disabled\nPARTITION_SCHEME=no_ota
+espressif:esp32:esp32;2.0.7;PSRAM=disabled\nPARTITION_SCHEME=no_ota
+espressif:esp32:esp32;1.0.6;PSRAM=disabled\nPARTITION_SCHEME=no_ota
+rp2040:rp2040:rpipico;1.13.1;USBSTACK=tinyusb
+rp2040:rp2040:generic;1.13.1;USBSTACK=tinyusb
