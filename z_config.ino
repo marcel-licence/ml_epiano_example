@@ -96,7 +96,11 @@ struct midiControllerMapping edirolMapping[] =
     { 0x0, 91, "Reverb", NULL, Reverb_SetLevel, 0},
 #endif
 #ifdef ML_CHORUS_ENABLED
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+    { 0x0, 93, "Chorus", NULL, ChorusQ_SetOutputLevel, 0},
+#else
     { 0x0, 93, "Chorus", NULL, Chorus_SetOutputLevel, 0},
+#endif
 #endif
     { 0x0, 74, "Cuttoff", NULL, NULL, 0},
     { 0x0, 71, "Resonance", NULL, NULL, 0},
@@ -142,6 +146,23 @@ struct midiControllerMapping edirolMapping_delay[] =
 #endif
 
 #ifdef ML_CHORUS_ENABLED
+#if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+struct midiControllerMapping edirolMapping_chorus[] =
+{
+    /* slider */
+    { 0x0, 0x11, "S1", NULL, ChorusQ_SetInputLevel, 0},
+    { 0x1, 0x11, "S2", NULL, ChorusQ_SetDelay, 1},
+    { 0x2, 0x11, "S3", NULL, ChorusQ_SetDepth, 2},
+    { 0x3, 0x11, "S4", NULL, ChorusQ_SetSpeed, 3},
+
+    { 0x4, 0x11, "S5", NULL, ChorusQ_SetThrough, 4},
+    { 0x5, 0x11, "S6", NULL, ChorusQ_SetPhaseShift, 5},
+    { 0x6, 0x11, "S7", NULL, NULL, 6},
+    { 0x7, 0x11, "S8", NULL, NULL, 7},
+
+    { 0x1, 0x12, "S9", NULL, ChorusQ_SetOutputLevel, 8},
+};
+#else
 struct midiControllerMapping edirolMapping_chorus[] =
 {
     /* slider */
@@ -157,6 +178,7 @@ struct midiControllerMapping edirolMapping_chorus[] =
 
     { 0x1, 0x12, "S9", NULL, Chorus_SetOutputLevel, 8},
 };
+#endif
 #endif
 
 struct midiControllerMapping edirolMapping_tremolo[] =

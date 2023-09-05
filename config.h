@@ -130,7 +130,6 @@ SoftwareSerial Serial2(RXD2, TXD2);
 // #define BLE_MIDI_CLIENT
 
 
-
 /*
  * use MIDI_BLE_ENABLED to activate the MIDI BLE functionality
  * you might turn off the delay and reverb due to the high heap consumption
@@ -179,7 +178,6 @@ SoftwareSerial Serial2(RXD2, TXD2);
  * LCK: 20
  */
 #ifdef TEENSYDUINO // CORE_TEENSY
-
 
 
 //#define USB_HOST_ENABLED

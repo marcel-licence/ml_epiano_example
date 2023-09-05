@@ -195,14 +195,14 @@ void setup()
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
     const uint32_t chorus_len = 2048; // deep chorus
     static int16_t chorus_buffer[chorus_len];
-    Chorus_Init(chorus_buffer, chorus_len);
+    ChorusQ_Init(chorus_buffer, chorus_len);
 
-    Chorus_SetInputLevel(0, 1.0f);
-    Chorus_SetOutputLevel(0, 1.0f);
-    Chorus_SetThrough(0, 1.0f);
-    Chorus_SetDepth(0, 0.5f);
-    Chorus_SetSpeed(0, 0.0f);
-    Chorus_SetPhaseShift(0, 0.5f);
+    ChorusQ_SetInputLevel(0, 1.0f);
+    ChorusQ_SetOutputLevel(0, 1.0f);
+    ChorusQ_SetThrough(0, 1.0f);
+    ChorusQ_SetDepth(0, 0.5f);
+    ChorusQ_SetSpeed(0, 0.0f);
+    ChorusQ_SetPhaseShift(0, 0.5f);
     Serial.printf(" done!\n");
 
     tremolo->init(SAMPLE_RATE);
@@ -255,7 +255,7 @@ void setup()
     }
 #else
     static int16_t delBuffer1[MAX_DELAY];
-    Delay_Init(delBuffer1,  MAX_DELAY);
+    Delay_Init(delBuffer1, MAX_DELAY);
     Delay_SetInputLevel(0, 0.75f);
     Delay_SetOutputLevel(0, 0.0f);
     Delay_SetFeedback(0, 0.25f);
@@ -455,7 +455,7 @@ void loop()
     Q1_14 right[SAMPLE_BUFFER_SIZE];
     rhodes->Process(mono, SAMPLE_BUFFER_SIZE);
     Delay_Process_Buff((int16_t *)mono, SAMPLE_BUFFER_SIZE);
-    Chorus_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
+    ChorusQ_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
     tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
     Audio_Output(left, right);
 
@@ -490,7 +490,6 @@ void loop()
 #if 0 /* maybe coming soon? */
     Overdrive_Process_fl(mono, SAMPLE_BUFFER_SIZE);
 #endif
-
 
 
 #ifdef USE_DAISY_SP
@@ -799,7 +798,7 @@ void App_DelayMode(uint8_t mode, float value)
 
 #include <Wire.h>
 
-void  ScanI2C(void)
+void ScanI2C(void)
 {
 #ifdef ARDUINO_GENERIC_F407VGTX
     Wire.setSDA(I2C_SDA);
