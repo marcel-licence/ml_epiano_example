@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Marcel Licence
+ * Copyright (c) 2024 Marcel Licence
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,8 +157,13 @@ void setup()
     Midi_Setup();
 #endif
 
+#ifdef ML_BOARD_SETUP
+    Board_Setup();
+#else
+
     Serial.printf("Initialize Audio Interface\n");
     Audio_Setup();
+
 
 #ifdef TEENSYDUINO
     Teensy_Setup();
@@ -177,6 +182,8 @@ void setup()
 
 #endif
 
+#endif /* ML_BOARD_SETUP */
+
 #ifdef USE_DAISY_SP
     float *verbBuf = (float *)malloc(DSY_REVERBSC_MAX_SIZE * sizeof(float));
     verb->SetBuffer(verbBuf);
@@ -193,6 +200,7 @@ void setup()
 
 
 #if (defined ARDUINO_RASPBERRY_PI_PICO) || (defined ARDUINO_GENERIC_RP2040)
+#ifdef CHORUS_ENABLED
     const uint32_t chorus_len = 2048; // deep chorus
     static int16_t chorus_buffer[chorus_len];
     ChorusQ_Init(chorus_buffer, chorus_len);
@@ -204,10 +212,17 @@ void setup()
     ChorusQ_SetSpeed(0, 0.0f);
     ChorusQ_SetPhaseShift(0, 0.5f);
     Serial.printf(" done!\n");
+#endif /* #ifdef CHORUS_ENABLED */
 
     tremolo->init(SAMPLE_RATE);
 
-    rhodes->Init(SAMPLE_RATE);
+    rhodes->Init((float)SAMPLE_RATE);
+#endif
+
+#if ((defined ARDUINO_ARCH_RP2040) && (defined __ARM_FEATURE_DSP))
+    Serial.printf(" done!\n");
+    //tremolo->init(SAMPLE_RATE);
+    //rhodes->Init(SAMPLE_RATE);
 #endif
 
 #ifdef REVERB_ENABLED
@@ -223,7 +238,7 @@ void setup()
 
 #ifdef MAX_DELAY
 
-#ifdef ESP32
+#if (defined ESP32) || ((defined ARDUINO_ARCH_RP2040) && (defined __ARM_FEATURE_DSP))
     rhodes->Init(SAMPLE_RATE);
 
     /*
@@ -455,8 +470,15 @@ void loop()
     Q1_14 right[SAMPLE_BUFFER_SIZE];
     rhodes->Process(mono, SAMPLE_BUFFER_SIZE);
     Delay_Process_Buff((int16_t *)mono, SAMPLE_BUFFER_SIZE);
+#ifdef CHORUS_ENABLED
     ChorusQ_Process_Buff(mono, left, right, SAMPLE_BUFFER_SIZE);
+#else
+    memcpy(left, mono, sizeof(left));
+    memcpy(right, mono, sizeof(left));
+#endif
+#ifdef TREMOLO_ENABLED
     tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
+#endif
     Audio_Output(left, right);
 
 #elif (defined ESP8266) || (defined ARDUINO_SEEED_XIAO_M0)
@@ -531,7 +553,9 @@ void loop()
     }
 #endif
 
+#ifdef TREMOLO_ENABLED
     tremolo->process(left, right, SAMPLE_BUFFER_SIZE);
+#endif
 
 #ifdef MAX_DELAY
     /*
@@ -558,6 +582,15 @@ void loop()
             left[i] += in_l[i];
             right[i] += in_r[i];
         }
+    }
+#endif
+
+
+#if (defined ARDUINO_ARCH_RP2040) && (defined __ARM_FEATURE_DSP)
+    for (int i = 0; i < SAMPLE_BUFFER_SIZE; i++)
+    {
+        left[i] *= 0.5f;
+        right[i] *= 0.5f;
     }
 #endif
 
@@ -647,12 +680,16 @@ void App_PitchBend(uint8_t unused __attribute__((unused)), float val)
 
 void App_ModWheel(uint8_t unused __attribute__((unused)), float val)
 {
+#ifdef TREMOLO_ENABLED
     tremolo->setDepth(val);
+#endif
 }
 
 void App_ModSpeed(uint8_t unused __attribute__((unused)), float val)
 {
+#ifdef TREMOLO_ENABLED
     tremolo->setSpeed(0.5 + val * 15);
+#endif
 }
 
 #define PARAM_QUICK_DAMP_VALUE  0
@@ -682,6 +719,7 @@ void App_ModParam(uint8_t param, float val)
     case PARAM_MODULATION_DEPTH:
         rhodes->SetModulationDepth(val);
         break;
+#ifdef TREMOLO_ENABLED
     case PARAM_TREMOLO_SHIFT:
         tremolo->setPhaseShift(val);
         break;
@@ -695,6 +733,7 @@ void App_ModParam(uint8_t param, float val)
             tremolo->setSpeed(speed);
         }
         break;
+#endif
     case PARAM_SOUND_C1:
         rhodes->SetCurve(val);
         break;
