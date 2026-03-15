@@ -166,6 +166,9 @@ jobs:
             options: ""
             manual_only: true
 
+        exclude:
+          - board:
+              name: "Seeeduino XIAO (SAMD21)"
 
 
     steps:
