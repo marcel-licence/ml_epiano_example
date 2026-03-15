@@ -166,35 +166,6 @@ jobs:
             options: ""
             manual_only: true
 
-        exclude:
-          - board:
-              name: "ESP32S2 Dev Module"
-
-          - board:
-              name: "LOLIN S2 Mini"
-
-          - board:
-              name: "ESP32C3 Dev Module"
-
-          - board:
-              name: "XIAO_ESP32C3"
-
-          - board:
-              name: "Generic ESP8266 Module"
-
-          - board:
-              name: "Seeeduino XIAO (SAMD21)"
-
-          - board:
-              name: "Generic STM32F4 Series - BlackPill F411CE"
-
-          - board:
-              name: "Generic STM32H7 Series - Daisy Seed"
-
-          - board:
-              name: "Teensy 4.1"
-
-
     steps:
     - uses: actions/checkout@v4
       with:
