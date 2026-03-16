@@ -35,11 +35,13 @@
  *
  * @brief Declarations of the app
  */
- 
+
 
 #ifndef APP_H_
 #define APP_H_
 
+
+#include "config.h"
 
 #include <stdint.h>
 
@@ -60,7 +62,9 @@ void App_ModSpeed(uint8_t unused __attribute__((unused)), float val);
 void App_SetVolume(uint8_t unused, float val);
 void App_ModParam(uint8_t param, float val);
 void App_ModSwitch(uint8_t param, float val);
-
+#ifdef MAX_DELAY
+void App_DelayMode(uint8_t mode, float value);
+#endif
 
 #define PARAM_QUICK_DAMP_VALUE  0
 #define PARAM_QUICK_DAMP_THRES  1

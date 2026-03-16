@@ -58,6 +58,9 @@
 #include <ml_chorus.h>
 #endif
 
+#ifdef MAX_DELAY
+#include <ml_delay.h>
+#endif
 
 #ifdef AUDIO_KIT_BUTTON_ANALOG
 audioKitButtonCb audioKitButtonCallback = NULL;
