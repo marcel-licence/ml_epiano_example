@@ -115,7 +115,7 @@ float driveInv = 1.0f;
 #endif
 
 
-char shortName[] = "ML_Piano";
+const char shortName[] = "ML_Piano";
 
 
 float mainVolume = 0.5f;
